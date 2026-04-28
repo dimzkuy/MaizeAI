@@ -10,7 +10,7 @@ export default function Home() {
   return (
     <div id="top" className="min-h-screen bg-white text-slate-900">
       <SiteHeader />
-
+      
       <main>
         <section className="mx-auto grid w-full max-w-[1440px] gap-10 px-6 py-12 sm:px-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:items-center lg:px-12 lg:py-16">
           <div className="max-w-[680px]">
@@ -62,6 +62,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Menampilkan kartu penyakit dengan informasi gambar, nama penyakit, dan deskripsi singkat untuk setiap kelas penyakit yang dapat dideteksi oleh sistem */}
         <section id="classes" className="bg-[#f2fff3]">
           <div className="mx-auto w-full max-w-[1440px] px-6 py-12 sm:px-10 lg:px-12 lg:py-16">
             <div className="mx-auto max-w-4xl text-center">
@@ -72,7 +73,6 @@ export default function Home() {
                 Sistem dapat mendeteksi beberapa jenis penyakit yang umum terjadi pada daun jagung dan juga daun yang sehat
               </p>
             </div>
-
             <div className="mt-10 grid gap-6 sm:grid-cols-2 xl:grid-cols-4 xl:gap-7">
               {diseaseCards.map((card) => (
                 <article

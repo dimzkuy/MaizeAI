@@ -9,13 +9,16 @@ import UploadLoadingOverlay from "../../components/uploadLoadingOverlay";
 const uploadIcon = "https://www.figma.com/api/mcp/asset/6c21ecc1-d7e2-425f-84e2-d16c87e5758f";
 
 export default function UploadPage() {
+  const maxUploadSizeBytes = 10 * 1024 * 1024;
   const fileInputRef = useRef(null);
   const objectUrlRef = useRef(null);
   const uploadTimerRef = useRef(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
+ // Membersihkan timer dan URL objek saat komponen di-unmount untuk mencegah memory leak 
   useEffect(() => {
     return () => {
       if (uploadTimerRef.current) {
@@ -28,6 +31,7 @@ export default function UploadPage() {
     };
   }, []);
 
+ // Membersihkan URL objek saat gambar baru dipilih untuk mencegah memory leak dan memastikan pratinjau yang ditampilkan benar 
   const clearObjectUrl = () => {
     if (objectUrlRef.current) {
       URL.revokeObjectURL(objectUrlRef.current);
@@ -35,18 +39,46 @@ export default function UploadPage() {
     }
   };
 
+ // Membuka file manager saat tombol unggah gambar diklik 
   const openFileManager = () => {
     fileInputRef.current?.click();
   };
 
-  const startPreview = (file) => {
+ // Membersihkan timer unggah saat terjadi kesalahan validasi 
+  const clearUploadTimer = () => {
+    if (uploadTimerRef.current) {
+      window.clearTimeout(uploadTimerRef.current);
+      uploadTimerRef.current = null;
+    }
+  };
+
+ // Memvalidasi file yang dipilih untuk memastikan file yang diunggah adalah gambar 
+  const validateFile = (file) => {
     if (!file || !file.type.startsWith("image/")) {
+      clearUploadTimer();
+      setUploadError("File gambar tidak valid");
+      setIsUploading(false);
+      return false;
+    }
+// Memvalidasi ukuran file untuk memastikan file yang diunggah tidak melebihi batas ukuran yang ditentukan
+    if (file.size > maxUploadSizeBytes) {
+      clearUploadTimer();
+      setUploadError("Ukuran gambar terlalu besar. Maksimal 10 MB");
+      setIsUploading(false);
+      return false;
+    }
+
+    setUploadError("");
+    return true;
+  };
+
+// Pratinjau gambar yang dipilih oleh user
+  const startPreview = (file) => {
+    if (!validateFile(file)) {
       return;
     }
 
-    if (uploadTimerRef.current) {
-      window.clearTimeout(uploadTimerRef.current);
-    }
+    clearUploadTimer();
 
     setIsUploading(true);
 
@@ -60,43 +92,43 @@ export default function UploadPage() {
     }, 900);
   };
 
+// Menangani perubahan file saat user memilih gambar melalui file manager  
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
 
-    if (!file || !file.type.startsWith("image/")) {
+    if (!validateFile(file)) {
       event.target.value = "";
       return;
     }
 
-    clearObjectUrl();
     startPreview(file);
     event.target.value = "";
   };
 
   const setFilePreview = (file) => {
-    if (!file || !file.type.startsWith("image/")) {
-      return;
-    }
-
     startPreview(file);
   };
 
+// Menangani event drag and drop untuk memungkinkan user mengunggah gambar dengan menyeretnya ke area upload box 
   const handleDrop = (event) => {
     event.preventDefault();
     setIsDragging(false);
     setFilePreview(event.dataTransfer.files?.[0]);
   };
 
+// Menangani event drag enter untuk memberikan feedback visual saat user mulai menyeret file ke area upload box  
   const handleDragEnter = (event) => {
     event.preventDefault();
     setIsDragging(true);
   };
 
+// Menangani event drag over untuk mempertahankan feedback visual saat user terus menyeret file di atas area upload box  
   const handleDragOver = (event) => {
     event.preventDefault();
     setIsDragging(true);
   };
 
+ // Menangani event drag leave untuk menghapus feedback visual saat user meninggalkan area upload box dengan menyeret file keluar dari area tersebut 
   const handleDragLeave = (event) => {
     event.preventDefault();
     setIsDragging(false);
@@ -184,13 +216,19 @@ export default function UploadPage() {
                     </button>
                     <button
                       type="button"
-                      className="inline-flex h-[54px] w-full items-center justify-center rounded-[20px] bg-[#2e7d32] px-[38px] text-[16px] font-semibold text-white transition-colors hover:bg-[#245f2a] sm:w-[187px]"
+                      className="inline-flex h-[54px] w-full items-center justify-center rounded-[20px] bg-[#2e7d32] px-[38px] text-[16px] font-semibold text-white transition-colors hover:bg-[#245f2a] sm:w-[187px] cursor-pointer"
                     >
                       Mulai Analisis
                     </button>
                   </div>
                 </>
               )}
+
+              {uploadError ? (
+                <p className="mt-4 text-center text-sm font-medium text-red-600">
+                  {uploadError}
+                </p>
+              ) : null}
 
               <input
                 ref={fileInputRef}
