@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { LoaderCircle } from "lucide-react";
 import Header from "../../components/header";
 import Footer from "../../components/footer";
 
@@ -10,11 +11,17 @@ const uploadIcon = "https://www.figma.com/api/mcp/asset/6c21ecc1-d7e2-425f-84e2-
 export default function UploadPage() {
   const fileInputRef = useRef(null);
   const objectUrlRef = useRef(null);
+  const uploadTimerRef = useRef(null);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     return () => {
+      if (uploadTimerRef.current) {
+        window.clearTimeout(uploadTimerRef.current);
+      }
+
       if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current);
       }
@@ -32,6 +39,27 @@ export default function UploadPage() {
     fileInputRef.current?.click();
   };
 
+  const startPreview = (file) => {
+    if (!file || !file.type.startsWith("image/")) {
+      return;
+    }
+
+    if (uploadTimerRef.current) {
+      window.clearTimeout(uploadTimerRef.current);
+    }
+
+    setIsUploading(true);
+
+    uploadTimerRef.current = window.setTimeout(() => {
+      clearObjectUrl();
+      const objectUrl = URL.createObjectURL(file);
+      objectUrlRef.current = objectUrl;
+      setSelectedImage({ src: objectUrl, alt: file.name || "Pratinjau gambar yang dipilih" });
+      setIsUploading(false);
+      uploadTimerRef.current = null;
+    }, 900);
+  };
+
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
 
@@ -41,9 +69,7 @@ export default function UploadPage() {
     }
 
     clearObjectUrl();
-    const objectUrl = URL.createObjectURL(file);
-    objectUrlRef.current = objectUrl;
-    setSelectedImage({ src: objectUrl, alt: file.name || "Pratinjau gambar yang dipilih" });
+    startPreview(file);
     event.target.value = "";
   };
 
@@ -52,10 +78,7 @@ export default function UploadPage() {
       return;
     }
 
-    clearObjectUrl();
-    const objectUrl = URL.createObjectURL(file);
-    objectUrlRef.current = objectUrl;
-    setSelectedImage({ src: objectUrl, alt: file.name || "Pratinjau gambar yang dipilih" });
+    startPreview(file);
   };
 
   const handleDrop = (event) => {
@@ -78,7 +101,6 @@ export default function UploadPage() {
     event.preventDefault();
     setIsDragging(false);
   };
-
 
   return (
     <div className="min-h-screen bg-white text-slate-900">
@@ -127,7 +149,7 @@ export default function UploadPage() {
                   <button
                     type="button"
                     onClick={openFileManager}
-                    className="mt-8 inline-flex w-full max-w-[240px] items-center justify-center rounded-[18px] bg-[#2e7d32] px-8 py-4 text-base font-semibold text-white transition-transform duration-200 hover:hover:bg-[#25692a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2e7d32] focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:max-w-[280px]"
+                    className="mt-8 inline-flex w-full max-w-[200px] items-center justify-center rounded-[18px] bg-[#2e7d32] px-6 py-4 text-base font-semibold text-white transition-transform duration-200 hover:hover:bg-[#25692a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2e7d32] focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:max-w-[220px] cursor-pointer"
                   >
                     Unggah Gambar
                   </button>
@@ -156,7 +178,7 @@ export default function UploadPage() {
                     <button
                       type="button"
                       onClick={openFileManager}
-                      className="inline-flex h-[54px] w-full items-center justify-center rounded-[20px] border-[3px] border-[#2e7d32] bg-white px-[38px] text-[16px] font-semibold text-[#2e7d32] whitespace-nowrap transition-colors hover:bg-[#eef8ef] sm:w-[187px]"
+                      className="inline-flex h-[54px] w-full items-center justify-center rounded-[20px] border-[3px] border-[#2e7d32] bg-white px-[38px] text-[16px] font-semibold text-[#2e7d32] whitespace-nowrap transition-colors hover:bg-[#eef8ef] sm:w-[187px] cursor-pointer"
                     >
                       Ganti Gambar
                     </button>
@@ -181,6 +203,17 @@ export default function UploadPage() {
           </div>
         </section>
       </main>
+
+      {isUploading ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 px-6 backdrop-blur-[1px]">
+          <div className="flex h-[173px] w-full max-w-[361px] items-center justify-center rounded-[20px] bg-white px-6 shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+            <div className="flex flex-col items-center gap-[18px] text-center">
+              <LoaderCircle className="h-[60px] w-[60px] animate-spin text-[#2e7d32] [animation-duration:1.1s]" aria-hidden="true" />
+              <p className="text-[24px] font-semibold leading-none text-[#2e7d32]">Mengunggah Gambar</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       <Footer />
     </div>
