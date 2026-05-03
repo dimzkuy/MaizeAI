@@ -2,15 +2,14 @@ from PIL import Image
 import numpy as np
 import io
 
+from app.config import CLASS_NAMES, IMAGE_SIZE
 import app.services.loadModel as model_loader
 
 # Mapping kelas prediksi
-class_names = ['Blight', 'Common Rust', 'Gray Leaf Spot', 'Healthy']
-
 # Function untuk memproses gambar sebelum prediksi
 def preprocess_image(image_bytes):
     img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
-    img = img.resize((224, 224))
+    img = img.resize(IMAGE_SIZE)
 
     img = np.array(img).astype(np.float32)
 
@@ -34,6 +33,6 @@ def predict_image(image_bytes):
     confidence = float(np.max(pred) * 100)
 
     return {
-        "prediction": class_names[idx],
+        "prediction": CLASS_NAMES[idx],
         "confidence": round(confidence, 2)
     }

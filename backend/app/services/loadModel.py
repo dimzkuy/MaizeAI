@@ -1,5 +1,7 @@
 import onnxruntime as ort
 
+from app.config import MODEL_PATH
+
 # Inisialisasi variabel global untuk menyimpan session dan input name
 session = None
 input_name = None
@@ -9,7 +11,7 @@ def load_model():
     global session, input_name
 
     if session is None:
-        session = ort.InferenceSession("models/xception_cornmodel.onnx")
+        session = ort.InferenceSession(MODEL_PATH)
         input_name = session.get_inputs()[0].name
         print("Model berhasil dimuat")
 
