@@ -1,8 +1,10 @@
 import onnxruntime as ort
 
+# Inisialisasi variabel global untuk menyimpan session dan input name
 session = None
 input_name = None
 
+# Function untuk memuat model ONNX
 def load_model():
     global session, input_name
 

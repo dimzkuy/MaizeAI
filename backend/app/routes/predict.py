@@ -4,9 +4,10 @@ import io
 
 import app.services.loadModel as model_loader
 
+# Mapping kelas prediksi
 class_names = ['Blight', 'Common Rust', 'Gray Leaf Spot', 'Healthy']
 
-
+# Function untuk memproses gambar sebelum prediksi
 def preprocess_image(image_bytes):
     img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
     img = img.resize((224, 224))
@@ -20,7 +21,7 @@ def preprocess_image(image_bytes):
 
     return img
 
-
+# Function untuk melakukan prediksi pada gambar yang diunggah
 def predict_image(image_bytes):
     img_array = preprocess_image(image_bytes)
 
