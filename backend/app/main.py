@@ -13,8 +13,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-
 # Load model saat startup
 @app.on_event("startup")
 def startup():

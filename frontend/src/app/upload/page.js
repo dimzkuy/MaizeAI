@@ -7,10 +7,10 @@ import Header from "../../components/header";
 import Footer from "../../components/footer";
 import UploadLoadingOverlay from "../../components/uploadLoadingOverlay";
 import AnalyzeLoadingOverlay from "../../components/analyzeLoadingOverlay";
+import { clearAnalysis, setAnalysis } from "../../lib/analysisStore";
 
 const uploadIcon = "/assets/icons/image.png";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
-const ANALYSIS_STORAGE_KEY = "maizeai:last-analysis";
 
 const classifyAnalysis = (prediction) => {
   if (prediction === "Healthy") {
@@ -127,21 +127,6 @@ export default function UploadPage() {
     startPreview(file);
   };
 
-  const readFileAsDataUrl = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = () => {
-        resolve(typeof reader.result === "string" ? reader.result : "");
-      };
-
-      reader.onerror = () => {
-        reject(new Error("Gagal membaca gambar"));
-      };
-
-      reader.readAsDataURL(file);
-    });
-
   const handleAnalyze = async () => {
     if (!selectedFileRef.current) {
       setUploadError("Pilih gambar terlebih dahulu");
@@ -165,10 +150,12 @@ export default function UploadPage() {
       }
 
       const result = await response.json();
-      const imageDataUrl = await readFileAsDataUrl(selectedFileRef.current);
       const status = classifyAnalysis(result.prediction);
-      const payload = {
-        image: imageDataUrl,
+      const imageUrl = URL.createObjectURL(selectedFileRef.current);
+
+      clearAnalysis();
+      setAnalysis({
+        imageUrl,
         prediction: result.prediction,
         confidence: result.confidence,
         status,
@@ -177,9 +164,8 @@ export default function UploadPage() {
           month: "long",
           year: "numeric",
         }).format(new Date()),
-      };
+      });
 
-      window.sessionStorage.setItem(ANALYSIS_STORAGE_KEY, JSON.stringify(payload));
       router.push(
         `/result?status=${status}&prediction=${encodeURIComponent(result.prediction)}&confidence=${encodeURIComponent(String(result.confidence))}`
       );

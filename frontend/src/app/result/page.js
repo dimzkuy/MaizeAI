@@ -6,8 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "../../components/header";
 import Footer from "../../components/footer";
-
-const STORAGE_KEY = "maizeai:last-analysis";
+import { getAnalysis } from "../../lib/analysisStore";
 
 const CLASS_MAP = {
   Healthy: "Sehat",
@@ -16,14 +15,32 @@ const CLASS_MAP = {
   "Gray Leaf Spot": "Bercak Daun Abu-abu",
 };
 
-const CARE_ITEMS = [
-  "Pemupukan Berimbang",
-  "Pengendalian Penyakit",
-  "Sanitasi Lahan",
-  "Rotasi Tanaman",
-  "Penyiraman Rutin",
-];
-
+const TREATMENT_MAP = {
+  "Blight": [
+    "Gunakan varietas tahan penyakit",
+    "Aplikasikan fungisida sesuai dosis",
+    "Lakukan rotasi tanaman",
+    "Jaga sanitasi lahan"
+  ],
+  "Common Rust": [
+    "Gunakan varietas tahan karat",
+    "Aplikasikan fungisida bila parah",
+    "Perbaiki sirkulasi udara",
+    "Monitoring rutin"
+  ],
+  "Gray Leaf Spot": [
+    "Gunakan benih sehat",
+    "Rotasi tanaman",
+    "Kurangi kelembaban daun",
+    "Aplikasi fungisida"
+  ],
+  "Healthy": [
+    "Pertahankan pemupukan seimbang",
+    "Monitoring rutin",
+    "Pengairan cukup",
+    "Sanitasi lahan"
+  ]
+};
 const ICON_MAP = {
   Healthy: "/assets/icons/checked.png",
   Blight: "/assets/icons/alert.png",
@@ -37,14 +54,16 @@ function resolveConfidence(searchParams) {
 }
 
 function resolveAnalysis(searchParams) {
-  const stored = window.sessionStorage.getItem(STORAGE_KEY);
+  const stored = getAnalysis();
 
   if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch {
-      window.sessionStorage.removeItem(STORAGE_KEY);
-    }
+    return {
+      prediction: stored.prediction,
+      title: CLASS_MAP[stored.prediction],
+      confidence: stored.confidence,
+      date: stored.date,
+      image: stored.imageUrl,
+    };
   }
 
   const prediction = searchParams.get("prediction");
@@ -95,7 +114,7 @@ export default function ResultPage() {
       `Tanggal Analisis: ${date}`,
       "",
       "Saran Perawatan",
-      ...CARE_ITEMS.map((item, index) => `${index + 1}. ${item}`),
+      ...TREATMENT_MAP[backendPrediction]?.map((item, index) => `${index + 1}. ${item}`) || [],
     ].join("\n");
 
     const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
@@ -132,7 +151,15 @@ export default function ResultPage() {
         <section className="mt-8 flex flex-col items-center justify-center gap-6 lg:mt-[45px] lg:flex-row lg:items-start lg:gap-[40px]">
           <article className="w-full max-w-[362px] rounded-[20px] border-[3px] border-[#2e7d32] bg-white px-4 pb-[18px] pt-4 shadow-[8px_10px_2px_rgba(0,0,0,0.25)] sm:px-8 sm:pt-[29px]">
             <div className="relative mx-auto aspect-square w-full max-w-[300px] overflow-hidden rounded-[6px]">
-              <Image src={analysis.image} alt={title} fill sizes="(min-width: 1024px) 300px, (min-width: 640px) 300px, 100vw" className="object-cover" priority />
+              <Image
+                src={analysis.image}
+                alt={title}
+                fill
+                sizes="(min-width: 1024px) 300px, (min-width: 640px) 300px, 100vw"
+                className="object-cover"
+                unoptimized={typeof analysis.image === "string" && analysis.image.startsWith("blob:")}
+                priority
+              />
             </div>
             <p className="mt-4 text-center text-lg font-semibold leading-tight sm:mt-[20px] sm:text-[20px] sm:leading-none">Tanggal Analisis</p>
             <p className="mt-2 text-center text-lg font-light leading-tight sm:mt-[18px] sm:text-[20px] sm:leading-none">{date}</p>
@@ -163,11 +190,15 @@ export default function ResultPage() {
               <h2 className="mt-8 px-0 text-lg font-bold leading-tight sm:mt-[46px] sm:px-[19px] sm:text-[24px] sm:leading-none">Saran Perawatan</h2>
 
               <ol className="mt-2 list-decimal px-5 text-base font-normal leading-relaxed sm:mt-[10px] sm:px-[19px] sm:text-[24px] sm:leading-[1.2]">
-                {CARE_ITEMS.map((item) => (
+                {TREATMENT_MAP[backendPrediction]?.map((item, index) => (
                   <li key={item} className="ms-4 sm:ms-[36px]">
                     {item}
                   </li>
-                ))}
+                )) || (
+                  <li className="ms-4 sm:ms-[36px]">
+                    Informasi perawatan tidak tersedia.
+                  </li>
+                )}
               </ol>
             </div>
 
@@ -175,7 +206,7 @@ export default function ResultPage() {
               <button
                 type="button"
                 onClick={handleDownload}
-                className="inline-flex h-[54px] w-full items-center justify-center rounded-[20px] border-[3px] border-[#2e7d32] bg-white px-4 text-[13px] font-semibold leading-none whitespace-nowrap text-[#2e7d32] transition-colors hover:bg-[#eef8ef] sm:w-[187px] sm:px-[38px] sm:text-[16px]"
+                className="inline-flex h-[54px] w-full items-center justify-center rounded-[20px] border-[3px] border-[#2e7d32] bg-white px-4 text-[13px] font-semibold leading-none whitespace-nowrap text-[#2e7d32] transition-colors hover:bg-[#eef8ef] sm:w-[187px] sm:px-[38px] sm:text-[16px] cursor-pointer"
               >
                 Unduh Hasil Analisis
               </button>
