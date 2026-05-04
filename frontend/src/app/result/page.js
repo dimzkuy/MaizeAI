@@ -149,7 +149,7 @@ export default function ResultPage() {
 
               <div className="mt-8 flex w-full flex-col gap-2 px-0 sm:mt-[49px] sm:max-w-[489px] sm:gap-[7px] sm:px-[31px]">
                 <div className="flex w-full items-end justify-between gap-3 text-base font-semibold leading-tight sm:gap-[71px] sm:text-[20px] sm:leading-none">
-                  <p className="flex-1 text-left sm:flex-none sm:w-[209px] sm:text-center">Keyakinan</p>
+                  <p className="flex-1 text-left sm:flex-none sm:w-[80px] sm:text-center">Keyakinan</p>
                   <p className="flex-1 text-right sm:flex-none sm:w-[209px] sm:text-center">{confidence}%</p>
                 </div>
                 <div className="relative h-[8px] w-full overflow-hidden rounded-full bg-[#e9e9e9] sm:w-[360px]">
@@ -175,7 +175,7 @@ export default function ResultPage() {
               <button
                 type="button"
                 onClick={handleDownload}
-                className="inline-flex h-[54px] min-w-[220px] w-full items-center justify-center rounded-[20px] border-[3px] border-[#2e7d32] bg-white px-6 text-[14px] font-semibold leading-none whitespace-nowrap text-[#2e7d32] transition-colors hover:bg-[#eef8ef] sm:min-w-0 sm:w-[187px] sm:px-[38px] sm:text-[16px]"
+                className="inline-flex h-[54px] w-full items-center justify-center rounded-[20px] border-[3px] border-[#2e7d32] bg-white px-4 text-[13px] font-semibold leading-none whitespace-nowrap text-[#2e7d32] transition-colors hover:bg-[#eef8ef] sm:w-[187px] sm:px-[38px] sm:text-[16px]"
               >
                 Unduh Hasil Analisis
               </button>
