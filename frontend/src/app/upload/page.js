@@ -6,7 +6,7 @@ import Header from "../../components/header";
 import Footer from "../../components/footer";
 import UploadLoadingOverlay from "../../components/uploadLoadingOverlay";
 
-const uploadIcon = "https://www.figma.com/api/mcp/asset/6c21ecc1-d7e2-425f-84e2-d16c87e5758f";
+const uploadIcon = "/assets/icons/image.png";
 
 export default function UploadPage() {
   const maxUploadSizeBytes = 10 * 1024 * 1024;

@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-const logoImage = "https://www.figma.com/api/mcp/asset/0368b504-692a-4791-8619-d0947989bef6";
+const logoImage = "/assets/icons/corn-cob2.png";
 
 export default function Header() {
   return (

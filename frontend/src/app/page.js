@@ -51,7 +51,7 @@ export default function Home() {
 
           <div className="overflow-hidden rounded-[20px] shadow-[0_10px_24px_rgba(0,0,0,0.14)]">
             <Image
-              src="https://www.figma.com/api/mcp/asset/41ff3eda-3272-4a34-b51e-e946602b48d5"
+              src="/assets/images/41ff3eda-3272-4a34-b51e-e946602b48d5.png"
               alt="Corn field preview"
               width={558}
               height={331}
