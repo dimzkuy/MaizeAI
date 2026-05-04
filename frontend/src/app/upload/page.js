@@ -140,7 +140,7 @@ export default function UploadPage() {
       const formData = new FormData();
       formData.append("file", selectedFileRef.current);
 
-      const response = await fetch(`/predict`, {
+      const response = await fetch(`${API_BASE_URL}/predict`, { 
         method: "POST",
         body: formData,
       });

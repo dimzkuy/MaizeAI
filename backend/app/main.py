@@ -18,6 +18,7 @@ app.add_middleware(
 def startup():
     load_model()
 
+
 # Endpoint untuk memeriksa apakah backend berjalan dengan baik
 @app.get("/")
 def root():
