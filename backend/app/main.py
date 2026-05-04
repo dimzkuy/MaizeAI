@@ -1,8 +1,19 @@
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from app.services.loadModel import load_model
 from app.routes.predict import predict_image
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 
 # Load model saat startup
 @app.on_event("startup")

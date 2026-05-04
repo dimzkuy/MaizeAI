@@ -1,21 +1,37 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import Header from "../../components/header";
 import Footer from "../../components/footer";
 import UploadLoadingOverlay from "../../components/uploadLoadingOverlay";
+import AnalyzeLoadingOverlay from "../../components/analyzeLoadingOverlay";
 
 const uploadIcon = "/assets/icons/image.png";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8000";
+const ANALYSIS_STORAGE_KEY = "maizeai:last-analysis";
+
+const classifyAnalysis = (prediction) => {
+  if (prediction === "Healthy") {
+    return "healthy";
+  }
+
+  return "sick";
+};
 
 export default function UploadPage() {
   const maxUploadSizeBytes = 10 * 1024 * 1024;
+  const router = useRouter();
   const fileInputRef = useRef(null);
   const objectUrlRef = useRef(null);
   const uploadTimerRef = useRef(null);
+  const selectedFileRef = useRef(null);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [uploadError, setUploadError] = useState("");
 
  // Membersihkan timer dan URL objek saat komponen di-unmount untuk mencegah memory leak 
@@ -79,6 +95,8 @@ export default function UploadPage() {
     }
 
     clearUploadTimer();
+    selectedFileRef.current = file;
+    setSelectedFile(file);
 
     setIsUploading(true);
 
@@ -107,6 +125,69 @@ export default function UploadPage() {
 
   const setFilePreview = (file) => {
     startPreview(file);
+  };
+
+  const readFileAsDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        resolve(typeof reader.result === "string" ? reader.result : "");
+      };
+
+      reader.onerror = () => {
+        reject(new Error("Gagal membaca gambar"));
+      };
+
+      reader.readAsDataURL(file);
+    });
+
+  const handleAnalyze = async () => {
+    if (!selectedFileRef.current) {
+      setUploadError("Pilih gambar terlebih dahulu");
+      return;
+    }
+
+    try {
+      setIsAnalyzing(true);
+      setUploadError("");
+
+      const formData = new FormData();
+      formData.append("file", selectedFileRef.current);
+
+      const response = await fetch(`${API_BASE_URL}/predict`, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Prediksi gagal diproses oleh server");
+      }
+
+      const result = await response.json();
+      const imageDataUrl = await readFileAsDataUrl(selectedFileRef.current);
+      const status = classifyAnalysis(result.prediction);
+      const payload = {
+        image: imageDataUrl,
+        prediction: result.prediction,
+        confidence: result.confidence,
+        status,
+        date: new Intl.DateTimeFormat("id-ID", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }).format(new Date()),
+      };
+
+      window.sessionStorage.setItem(ANALYSIS_STORAGE_KEY, JSON.stringify(payload));
+      router.push(
+        `/result?status=${status}&prediction=${encodeURIComponent(result.prediction)}&confidence=${encodeURIComponent(String(result.confidence))}`
+      );
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Gagal menganalisis gambar");
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
 // Menangani event drag and drop untuk memungkinkan user mengunggah gambar dengan menyeretnya ke area upload box 
@@ -181,7 +262,7 @@ export default function UploadPage() {
                   <button
                     type="button"
                     onClick={openFileManager}
-                    className="mt-8 inline-flex w-full max-w-[200px] items-center justify-center rounded-[18px] bg-[#2e7d32] px-6 py-4 text-base font-semibold text-white transition-transform duration-200 hover:hover:bg-[#25692a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2e7d32] focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:max-w-[220px] cursor-pointer"
+                    className="mt-8 inline-flex w-full max-w-[200px] cursor-pointer items-center justify-center rounded-[18px] bg-[#2e7d32] px-6 py-4 text-base font-semibold text-white transition-transform duration-200 hover:bg-[#25692a] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2e7d32] focus-visible:ring-offset-2 focus-visible:ring-offset-white sm:max-w-[220px]"
                   >
                     Unggah Gambar
                   </button>
@@ -216,9 +297,11 @@ export default function UploadPage() {
                     </button>
                     <button
                       type="button"
-                      className="inline-flex h-[54px] w-full items-center justify-center rounded-[20px] bg-[#2e7d32] px-[38px] text-[16px] font-semibold text-white transition-colors hover:bg-[#245f2a] sm:w-[187px] cursor-pointer"
+                      onClick={handleAnalyze}
+                      disabled={isAnalyzing || !selectedFile}
+                      className="inline-flex h-[54px] w-full cursor-pointer items-center justify-center rounded-[20px] bg-[#2e7d32] px-[38px] text-[16px] font-semibold text-white transition-colors hover:bg-[#245f2a] disabled:cursor-not-allowed disabled:bg-[#8fb191] sm:w-[187px]"
                     >
-                      Mulai Analisis
+                      {isAnalyzing ? "Menganalisis..." : "Mulai Analisis"}
                     </button>
                   </div>
                 </>
@@ -243,6 +326,7 @@ export default function UploadPage() {
       </main>
 
       {isUploading ? <UploadLoadingOverlay /> : null}
+      {isAnalyzing ? <AnalyzeLoadingOverlay /> : null}
 
       <Footer />
     </div>
