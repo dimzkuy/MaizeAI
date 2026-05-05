@@ -21,7 +21,7 @@ const classifyAnalysis = (prediction) => {
 };
 
 export default function UploadPage() {
-  const maxUploadSizeBytes = 10 * 1024 * 1024;
+  const maxUploadSizeBytes = 2 * 1024 * 1024;
   const router = useRouter();
   const fileInputRef = useRef(null);
   const objectUrlRef = useRef(null);
@@ -79,7 +79,7 @@ export default function UploadPage() {
 // Memvalidasi ukuran file untuk memastikan file yang diunggah tidak melebihi batas ukuran yang ditentukan
     if (file.size > maxUploadSizeBytes) {
       clearUploadTimer();
-      setUploadError("Ukuran gambar terlalu besar. Maksimal 10 MB");
+      setUploadError("Ukuran gambar terlalu besar. Maksimal 2 MB");
       setIsUploading(false);
       return false;
     }
@@ -242,7 +242,7 @@ export default function UploadPage() {
                       Seret Gambar kesini atau Klik tombol dibawah untuk menggunggah
                     </h3>
                     <p className="max-w-[680px] text-sm leading-7 text-slate-900 sm:text-base sm:leading-7 md:text-[20px]">
-                      Mendukung format PNG, JPG, HEIC maks 10 MB
+                      Mendukung format PNG, JPG, HEIC maks 2 MB
                     </p>
                   </div>
                   <button
