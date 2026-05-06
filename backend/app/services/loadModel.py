@@ -22,14 +22,10 @@ def load_model():
         blob = bucket.blob(GCS_MODEL_BLOB)
 
         CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
-
-        # download model hanya kalau belum ada
-        if not CACHE_PATH.exists():
-            print("Downloading model from GCS.")
-            blob.download_to_filename(CACHE_PATH)
-            print("Download complete!")
-        else:
-            print("Model sudah ada")
+        
+        print("Downloading model from GCS.")
+        blob.download_to_filename(CACHE_PATH)
+        print("Download complete!")
 
         # set path fix
         model_path = CACHE_PATH
