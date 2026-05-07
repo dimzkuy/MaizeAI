@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "../../components/header";
 import Footer from "../../components/footer";
@@ -86,15 +85,7 @@ function resolveAnalysis(searchParams) {
 
 export default function ResultClient() {
   const searchParams = useSearchParams();
-  const [analysis, setAnalysis] = useState(null);
-
-  useEffect(() => {
-    const timerId = window.setTimeout(() => {
-      setAnalysis(resolveAnalysis(searchParams));
-    }, 0);
-
-    return () => window.clearTimeout(timerId);
-  }, [searchParams]);
+  const analysis = resolveAnalysis(searchParams);
 
   const backendPrediction = analysis?.prediction;
   const displayClassLabel = backendPrediction ? CLASS_MAP[backendPrediction] : null;
@@ -131,9 +122,7 @@ export default function ResultClient() {
     return (
       <div className="min-h-screen bg-white text-black">
         <Header />
-        <main className="mx-auto flex w-full max-w-[1440px] items-center justify-center px-6 py-24 text-center sm:px-6">
-          <p className="text-base font-medium text-slate-700 sm:text-lg">Menunggu hasil analisis...</p>
-        </main>
+        <main className="mx-auto flex w-full max-w-[1440px] items-center justify-center px-6 py-24 text-center sm:px-6" />
         <Footer />
       </div>
     );
