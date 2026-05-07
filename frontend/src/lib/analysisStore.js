@@ -3,10 +3,13 @@ let currentAnalysis = null;
 const STORAGE_KEY = "maizeai.analysis";
 const listeners = new Set();
 
+
+// Mengecek apakah kode sedang berjalan di browser, bukan saat server-side rendering
 function isBrowser() {
   return typeof window !== "undefined";
 }
 
+// Membaca hasil analisis yang sudah disimpan di sessionStorage
 function readStoredAnalysis() {
   if (!isBrowser()) {
     return null;
@@ -20,6 +23,7 @@ function readStoredAnalysis() {
   }
 }
 
+// Menyimpan atau menghapus hasil analisis dari sessionStorage
 function persistAnalysis(analysis) {
   if (!isBrowser()) {
     return;
@@ -36,6 +40,7 @@ function persistAnalysis(analysis) {
   }
 }
 
+// Memberi tahu semua subscriber bahwa data analisis berubah
 function notifyListeners() {
   listeners.forEach((listener) => listener());
 }
@@ -44,6 +49,7 @@ if (isBrowser()) {
   currentAnalysis = readStoredAnalysis();
 }
 
+// Menetapkan hasil analisis baru dan menyimpannya ke memori serta sessionStorage
 export function setAnalysis(analysis) {
   if (currentAnalysis?.imageUrl && currentAnalysis.imageUrl !== analysis?.imageUrl && currentAnalysis.imageUrl.startsWith("blob:")) {
     URL.revokeObjectURL(currentAnalysis.imageUrl);
@@ -54,6 +60,7 @@ export function setAnalysis(analysis) {
   notifyListeners();
 }
 
+// Mengambil hasil analisis yang aktif, atau memuat ulang dari sessionStorage bila perlu
 export function getAnalysis() {
   if (!currentAnalysis) {
     currentAnalysis = readStoredAnalysis();
@@ -62,6 +69,7 @@ export function getAnalysis() {
   return currentAnalysis;
 }
 
+// Menghapus hasil analisis dari memori, sessionStorage, dan object URL blob jika ada
 export function clearAnalysis() {
   if (currentAnalysis?.imageUrl && currentAnalysis.imageUrl.startsWith("blob:")) {
     URL.revokeObjectURL(currentAnalysis.imageUrl);
@@ -72,6 +80,7 @@ export function clearAnalysis() {
   notifyListeners();
 }
 
+// Mendaftarkan listener agar komponen bisa mengikuti perubahan data analisis
 export function subscribeAnalysis(listener) {
   listeners.add(listener);
 

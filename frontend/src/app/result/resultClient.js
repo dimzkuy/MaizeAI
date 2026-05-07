@@ -206,7 +206,6 @@ export default function ResultClient() {
           </article>
         </section>
       </main>
-
       <Footer />
     </div>
   );

@@ -68,6 +68,22 @@ export default function UploadPage() {
     }
   };
 
+  // Membaca analisis yang disimpan dari sessionStorage untuk memulihkan hasil analisis sebelumnya jika user merefresh halaman
+  const readFileAsDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        resolve(typeof reader.result === "string" ? reader.result : null);
+      };
+
+      reader.onerror = () => {
+        reject(new Error("Gagal membaca gambar"));
+      };
+
+      reader.readAsDataURL(file);
+    });
+
  // Memvalidasi file yang dipilih untuk memastikan file yang diunggah adalah gambar 
   const validateFile = (file) => {
     if (!file || !file.type.startsWith("image/")) {
@@ -123,10 +139,12 @@ export default function UploadPage() {
     event.target.value = "";
   };
 
+  // Menangani preview gambar
   const setFilePreview = (file) => {
     startPreview(file);
   };
 
+  // Menangani proses analisis gambar yang dipilih dengan mengirimkannya ke backend untuk diprediksi dan menyimpan hasil analisis untuk ditampilkan di halaman hasil prediksi
   const handleAnalyze = async () => {
     if (!selectedFileRef.current) {
       setUploadError("Pilih gambar terlebih dahulu");
@@ -151,7 +169,7 @@ export default function UploadPage() {
 
       const result = await response.json();
       const status = classifyAnalysis(result.prediction);
-      const imageUrl = URL.createObjectURL(selectedFileRef.current);
+      const imageUrl = await readFileAsDataUrl(selectedFileRef.current);
 
       clearAnalysis();
       setAnalysis({
@@ -166,6 +184,7 @@ export default function UploadPage() {
         }).format(new Date()),
       });
 
+      // Mengarahkan user ke halaman hasil prediksi setelah analisis selesai
       router.push(
         `/result?status=${status}&prediction=${encodeURIComponent(result.prediction)}&confidence=${encodeURIComponent(String(result.confidence))}`
       );

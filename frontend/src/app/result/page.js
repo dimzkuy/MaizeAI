@@ -50,7 +50,7 @@ const ICON_MAP = {
   "Gray Leaf Spot": "/assets/icons/alert.png",
 };
 
-// 
+// Fungsi untuk mendapatkan snapshot data analisis saat ini
 function getSnapshot() {
   return getAnalysis();
 }
@@ -148,9 +148,9 @@ export default function ResultPage() {
                 </div>
               </div>
 
-              <h2 className="mt-8 px-0 text-lg font-bold leading-tight sm:mt-[46px] sm:px-[19px] sm:text-[24px] sm:leading-none">Saran Perawatan</h2>
+              <h2 className="mt-8 px-4 text-base font-bold leading-tight text-left sm:mt-[46px] sm:px-[32px] sm:text-[20px] sm:text-left sm:leading-none">Saran Perawatan</h2>
 
-              <ol className="mt-2 list-decimal px-5 text-base font-normal leading-relaxed sm:mt-[10px] sm:px-[19px] sm:text-[24px] sm:leading-[1.2]">
+              <ol className="mt-2 list-decimal px-5 text-base font-normal leading-relaxed sm:mt-[10px] sm:px-[19px] sm:text-[20px] sm:leading-[1.6]">
                 {TREATMENT_MAP[backendPrediction]?.map((item) => (
                   <li key={item} className="ms-4 sm:ms-[36px]">
                     {item}
@@ -163,7 +163,7 @@ export default function ResultPage() {
               <button
                 type="button"
                 onClick={handleDownload}
-                className="inline-flex h-[54px] w-full items-center justify-center rounded-[20px] border-[3px] border-[#2e7d32] bg-white px-4 text-[13px] font-semibold leading-none whitespace-nowrap text-[#2e7d32] transition-colors hover:bg-[#eef8ef] sm:w-[187px] sm:px-[38px] sm:text-[16px] cursor-pointer"
+                className="inline-flex h-[54px] w-full items-center justify-center rounded-[20px] border-[3px] border-[#2e7d32] bg-white px-4 text-[16px] font-semibold leading-none whitespace-nowrap text-[#2e7d32] transition-colors hover:bg-[#eef8ef] sm:w-[187px] sm:px-[38px] sm:text-[16px] cursor-pointer"
               >
                 Unduh Hasil Analisis
               </button>
