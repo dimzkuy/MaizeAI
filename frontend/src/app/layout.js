@@ -7,7 +7,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "MaizeAI",
+  title: "MaizeAI - Web App Deteksi Penyakit Daun Jagung",
   description: "Web App Deteksi Penyakit Daun Jagung",
 };
 
