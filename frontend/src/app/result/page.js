@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
+import { jsPDF } from "jspdf";
 import Header from "../../components/header";
 import Footer from "../../components/footer";
 import { getAnalysis, subscribeAnalysis } from "../../lib/analysisStore";
@@ -55,6 +56,19 @@ function getSnapshot() {
   return getAnalysis();
 }
 
+// Membuat nama file berdasarkan tanggal dan jam saat ini agar rapi dan unik.
+function formatPdfFileName(date = new Date()) {
+  const pad = (value) => String(value).padStart(2, "0");
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+
+  return `analisis_${year}-${month}-${day}_${hours}-${minutes}-${seconds}.pdf`;
+}
+
 export default function ResultPage() {
   const analysis = useSyncExternalStore(subscribeAnalysis, getSnapshot, () => null);
 
@@ -68,25 +82,123 @@ export default function ResultPage() {
   const iconSrc = backendPrediction ? ICON_MAP[backendPrediction] : null;
 
   const handleDownload = () => {
-    const text = [
-      "Hasil Prediksi",
-      title,
-      `Prediksi backend: ${backendPrediction}`,
-      `Label Indonesia: ${displayClassLabel}`,
-      `Keyakinan: ${confidence}%`,
-      `Tanggal Analisis: ${date}`,
-      "",
-      "Saran Perawatan",
-      ...(TREATMENT_MAP[backendPrediction]?.map((item, index) => `${index + 1}. ${item}`) || []),
-    ].join("\n");
+    const pdf = new jsPDF({ unit: "pt", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const marginX = 48;
+    const marginTop = 56;
+    const lineGap = 18;
+    const contentWidth = pageWidth - marginX * 2;
+    const fileName = formatPdfFileName(new Date());
+    const imageWidth = 170;
+    const imageHeight = 170;
+    const sectionGap = 18;
 
-    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `maizeai-hasil-${analysis?.status || "sick"}.txt`;
-    anchor.click();
-    URL.revokeObjectURL(url);
+    const addWrappedText = (text, x, y, options = {}) => {
+      const wrappedLines = pdf.splitTextToSize(text, options.width || contentWidth);
+      const lineHeight = options.lineHeight || lineGap;
+
+      wrappedLines.forEach((line) => {
+        if (y > pageHeight - 40) {
+          pdf.addPage();
+          y = marginTop;
+        }
+
+        pdf.text(line, x, y);
+        y += lineHeight;
+      });
+
+      return y;
+    };
+
+    const addNumberedItem = (number, text, x, y, options = {}) => {
+      const numberWidth = options.numberWidth || 18;
+      const itemWidth = options.width || contentWidth - numberWidth;
+      const lineHeight = options.lineHeight || lineGap;
+      const labelX = x;
+      const textX = x + numberWidth;
+
+      if (y > pageHeight - 40) {
+        pdf.addPage();
+        y = marginTop;
+      }
+
+      pdf.text(`${number}.`, labelX, y);
+
+      const wrappedLines = pdf.splitTextToSize(text, itemWidth);
+      let currentY = y;
+
+      wrappedLines.forEach((line, index) => {
+        if (index === 0) {
+          pdf.text(line, textX, currentY);
+        } else {
+          currentY += lineHeight;
+
+          if (currentY > pageHeight - 40) {
+            pdf.addPage();
+            currentY = marginTop;
+          }
+
+          pdf.text(line, textX, currentY);
+        }
+      });
+
+      return currentY + lineHeight;
+    };
+
+    let cursorY = marginTop;
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(20);
+    cursorY = addWrappedText("Hasil Prediksi", marginX, cursorY, { lineHeight: 24 });
+
+    cursorY += 10;
+    pdf.setFontSize(13);
+    pdf.setFont("helvetica", "normal");
+    const imageData = analysis?.imageUrl;
+    const imageX = pageWidth - marginX - imageWidth;
+    const textBlockWidth = pageWidth - marginX * 2 - imageWidth - sectionGap;
+    const textX = marginX;
+    const textStartY = cursorY;
+    let textCursorY = textStartY;
+    let imageStartY = textStartY;
+
+    textCursorY = addWrappedText(`Prediksi: ${displayClassLabel}`, textX, textCursorY, { width: textBlockWidth });
+    textCursorY = addWrappedText(`Keyakinan: ${confidence}%`, textX, textCursorY, { width: textBlockWidth });
+    textCursorY = addWrappedText(`Tanggal Analisis: ${date}`, textX, textCursorY, { width: textBlockWidth });
+
+    if (typeof imageData === "string" && imageData.length > 0) {
+      const mimeMatch = imageData.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,/);
+      const imageFormat = mimeMatch?.[1]?.toLowerCase().includes("png") ? "PNG" : "JPEG";
+
+      if (imageStartY + imageHeight > pageHeight - 40) {
+        pdf.addPage();
+        imageStartY = marginTop;
+      }
+
+      try {
+        pdf.addImage(imageData, imageFormat, imageX, imageStartY, imageWidth, imageHeight);
+      } catch {
+        // Jika gambar gagal digambar, PDF tetap bisa diunduh tanpa error.
+      }
+    }
+
+    cursorY = textCursorY + 14;
+    pdf.setFont("helvetica", "bold");
+    cursorY = addWrappedText("Saran Perawatan", marginX, cursorY, { lineHeight: 20 });
+
+    pdf.setFont("helvetica", "normal");
+    const recommendations = TREATMENT_MAP[backendPrediction] || [];
+
+    if (recommendations.length > 0) {
+      recommendations.forEach((item, index) => {
+        cursorY = addNumberedItem(index + 1, item, marginX, cursorY, { numberWidth: 22, width: contentWidth - 22, lineHeight: 18 });
+      });
+    } else {
+      cursorY = addWrappedText("Informasi perawatan tidak tersedia.", marginX, cursorY);
+    }
+
+    pdf.save(fileName);
   };
 
   if (!analysis || !backendPrediction || !displayClassLabel || confidence == null || !date || !analysis.imageUrl) {
