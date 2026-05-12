@@ -34,5 +34,5 @@ def predict_image(image_bytes):
 
     return {
         "prediction": CLASS_NAMES[idx],
-        "confidence": round(confidence, 2)
+        "confidence": round(confidence, 2),
     }

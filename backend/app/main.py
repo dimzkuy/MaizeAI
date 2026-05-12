@@ -1,6 +1,6 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from app.services.loadModel import load_model
+import app.services.loadModel as model_loader
 from app.routes.predict import predict_image
 
 app = FastAPI()
@@ -16,13 +16,16 @@ app.add_middleware(
 # Load model saat startup
 @app.on_event("startup")
 def startup():
-    load_model()
+    model_loader.load_model()
 
 
 # Endpoint untuk memeriksa apakah backend berjalan dengan baik
 @app.get("/")
 def root():
-    return {"message": "Backend telah berhasil dijalankan!"}
+    return {
+        "message": "Backend telah berhasil dijalankan!",
+        "model_architecture": model_loader.model_architecture,
+    }
 
 # Endpoint untuk memproses prediksi gambar yang diunggah
 @app.post("/predict")

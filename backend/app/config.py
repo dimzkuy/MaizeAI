@@ -7,6 +7,7 @@ load_dotenv()
 # GCS CONFIG
 GCS_BUCKET_NAME = os.environ["GCS_BUCKET_NAME"]
 GCS_MODEL_BLOB = os.environ["GCS_MODEL_BLOB"]
+MODEL_ARCHITECTURE = os.getenv("MODEL_ARCHITECTURE", "").strip()
 
 CLASS_NAMES = [
     "Blight",

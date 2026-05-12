@@ -47,6 +47,34 @@ export default function UploadPage() {
     };
   }, []);
 
+  // Mengecek arsitektur model saat halaman upload dibuka agar bisa dilihat di console browser
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchModelArchitecture = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/`, { signal: controller.signal });
+
+        if (!response.ok) {
+          return;
+        }
+        // Menampilkan arsitektur model di console untuk debugging dan transparansi
+        const data = await response.json();
+        console.log("Arsitektur Model yang Dimuat:", data.model_architecture);
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+
+        console.error("Gagal mengambil arsitektur model:", error);
+      }
+    };
+
+    fetchModelArchitecture();
+
+    return () => controller.abort();
+  }, []);
+
  // Membersihkan URL objek saat gambar baru dipilih untuk mencegah memory leak dan memastikan pratinjau yang ditampilkan benar 
   const clearObjectUrl = () => {
     if (objectUrlRef.current) {
