@@ -1,5 +1,4 @@
 from pathlib import Path
-import re
 import onnxruntime as ort
 from google.cloud import storage
 
@@ -9,10 +8,10 @@ session = None
 input_name = None
 model_architecture = ""
 
-
+# Cache path untuk model yang diunduh dari GCS
 CACHE_PATH = Path("/tmp/model.onnx")
 
-
+# Fungsi untuk memformat nama model menjadi lebih jelas dibaca
 def prettify_model_name(model_name: str) -> str:
     stem = Path(model_name).stem
     normalized = re.sub(r"[_\-]+", " ", stem).strip()
@@ -25,7 +24,7 @@ def prettify_model_name(model_name: str) -> str:
 
     return " ".join(word.capitalize() if not word.isupper() else word for word in normalized.split())
 
-
+# 
 def resolve_model_architecture(model_blob_name: str, inference_session: ort.InferenceSession) -> str:
     env_architecture = MODEL_ARCHITECTURE
     if env_architecture:
