@@ -5,7 +5,7 @@ from tensorflow.keras.applications.efficientnet import preprocess_input
 from app.config import CLASS_NAMES, IMAGE_SIZE
 import app.services.loadModel as model_loader
 
-# Mapping kelas prediksi
+
 # Function untuk memproses gambar sebelum prediksi
 def preprocess_image(image_bytes):
     img = Image.open(io.BytesIO(image_bytes)).convert("RGB")

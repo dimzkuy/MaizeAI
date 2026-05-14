@@ -16,7 +16,7 @@ CLASS_NAMES = [
     "Healthy"
 ]
 
-IMAGE_SIZE = (260, 260)
+IMAGE_SIZE = (224, 224)
 
 HOST = "127.0.0.1"
 PORT = 8000
