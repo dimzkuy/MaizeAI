@@ -39,29 +39,32 @@ def resolve_model_architecture(model_blob_name: str, inference_session: ort.Infe
 
     return prettify_model_name(model_blob_name)
 
-
+# Fungsi untuk memuat model ONNX dari GCS atau cache lokal
 def load_model():
     global session, input_name, model_architecture
 
     if session is None:
-        print(f"Loading model from GCS: {GCS_MODEL_BLOB}")
-
-        client = storage.Client()
-        bucket = client.bucket(GCS_BUCKET_NAME)
-        blob = bucket.blob(GCS_MODEL_BLOB)
-
         CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
-        
-        print("Downloading model from GCS.")
-        blob.download_to_filename(CACHE_PATH)
-        print("Download complete!")
 
-        # set path fix
-        model_path = CACHE_PATH
+        if CACHE_PATH.exists():
+            print(f"Using cached model from {CACHE_PATH}")
+            model_path = CACHE_PATH
+        else:
+            print(f"Loading model from GCS: {GCS_MODEL_BLOB}")
+
+            client = storage.Client()
+            bucket = client.bucket(GCS_BUCKET_NAME)
+            blob = bucket.blob(GCS_MODEL_BLOB)
+
+            print("Downloading model from GCS.")
+            blob.download_to_filename(CACHE_PATH)
+            print("Download complete!")
+
+            # set path fix
+            model_path = CACHE_PATH
 
         # load ONNX
         session = ort.InferenceSession(str(model_path))
-        print(session.get_inputs()[0].shape)
         input_name = session.get_inputs()[0].name
         model_architecture = resolve_model_architecture(GCS_MODEL_BLOB, session)
 
