@@ -5,7 +5,7 @@ steps:
       [
         "build",
         "-t",
-        "asia-southeast2-docker.pkg.dev/$PROJECT_ID/maizeai-repo/maizeai-app",
+        "asia-southeast2-docker.pkg.dev/$PROJECT_ID/maizeai-repo/maizeai-backend",
         "./backend",
       ]
   # Push image ke Artifact Registry
@@ -13,7 +13,7 @@ steps:
     args:
       [
         "push",
-        "asia-southeast2-docker.pkg.dev/$PROJECT_ID/maizeai-repo/maizeai-app",
+        "asia-southeast2-docker.pkg.dev/$PROJECT_ID/maizeai-repo/maizeai-backend",
       ]
   # Deploy ke Cloud Run
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
@@ -22,9 +22,9 @@ steps:
       [
         "run",
         "deploy",
-        "maizeai-app",
+        "maizeai-backend",
         "--image",
-        "asia-southeast2-docker.pkg.dev/$PROJECT_ID/maizeai-repo/maizeai-app",
+        "asia-southeast2-docker.pkg.dev/$PROJECT_ID/maizeai-repo/maizeai-backend",
         "--region",
         "asia-southeast2",
         "--platform",
