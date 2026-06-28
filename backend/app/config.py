@@ -17,7 +17,3 @@ CLASS_NAMES = [
 ]
 
 IMAGE_SIZE = (224, 224)
-
-HOST = "127.0.0.1"
-PORT = 8000
-DEBUG = True

@@ -12,7 +12,7 @@ model_architecture = ""
 
 CACHE_PATH = Path("/tmp/model.onnx")
 
-
+# Memperjelas nama model dari nama file blob GCS
 def prettify_model_name(model_name: str) -> str:
     stem = Path(model_name).stem
     normalized = re.sub(r"[_\-]+", " ", stem).strip()
@@ -25,7 +25,7 @@ def prettify_model_name(model_name: str) -> str:
 
     return " ".join(word.capitalize() if not word.isupper() else word for word in normalized.split())
 
-
+# Menemukan arsitektur model dari metadata ONNX atau variabel lingkungan
 def resolve_model_architecture(model_blob_name: str, inference_session: ort.InferenceSession) -> str:
     env_architecture = MODEL_ARCHITECTURE
     if env_architecture:
