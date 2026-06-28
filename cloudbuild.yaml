@@ -30,6 +30,8 @@ steps:
         "--platform",
         "managed",
         "--allow-unauthenticated",
+        "--set-env-vars",
+        "GCS_BUCKET_NAME=cornmodel,GCS_MODEL_BLOB=efficientnetb0_cornmodel.onnx",
       ]
 
 options:
