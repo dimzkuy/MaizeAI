@@ -25,7 +25,7 @@ def prettify_model_name(model_name: str) -> str:
 
     return " ".join(word.capitalize() if not word.isupper() else word for word in normalized.split())
 
-# Menemukan arsitektur model dari metadata ONNX atau variabel lingkungan
+# Menemukan arsitektur model dari metadata ONNX atau env
 def resolve_model_architecture(model_blob_name: str, inference_session: ort.InferenceSession) -> str:
     env_architecture = MODEL_ARCHITECTURE
     if env_architecture:

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, File, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 import app.services.loadModel as model_loader
 from app.routes.predict import predict_image
@@ -31,5 +32,5 @@ def root():
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     image_bytes = await file.read()
-    result = predict_image(image_bytes)
+    result = await run_in_threadpool(predict_image, image_bytes)
     return result
