@@ -277,7 +277,7 @@ export default function ResultPage() {
                 onClick={handleDownload}
                 className="inline-flex h-[54px] w-full items-center justify-center rounded-[20px] border-[3px] border-[#2e7d32] bg-white px-4 text-[16px] font-semibold leading-none whitespace-nowrap text-[#2e7d32] transition-colors hover:bg-[#eef8ef] sm:w-[187px] sm:px-[38px] sm:text-[16px] cursor-pointer"
               >
-                Unduh Hasil Analisis
+                Unduh Hasil Prediksi
               </button>
               <Link
                 href="/upload"
