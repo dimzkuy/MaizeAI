@@ -489,7 +489,7 @@ export default function UploadPage() {
                       Ambil Foto dari Kamera atau Unggah Gambar
                     </h3>
                     <p className="max-w-[680px] text-sm leading-7 text-slate-900 sm:text-base sm:leading-7 md:text-[20px]">
-                      Mendukung format PNG, JPG, HEIC maks 2 MB
+                      Mendukung format PNG, JPG, HEIC maks 10 MB
                     </p>
                   </div>
                   <div className="mt-8 flex w-full flex-col items-center justify-center gap-4 sm:flex-row sm:gap-8">
